@@ -4,13 +4,14 @@ from tkinter import messagebox
 
 # DDoS Prevention System
 class DDOSPrevention:
-    def _init_(self, rate_limit, time_window):
+    def __init__(self, rate_limit, time_window):
         self.rate_limit = rate_limit
         self.time_window = time_window
         self.request_timestamps = []
 
     def check_request(self):
         current_time = time.time()
+        # Filter timestamps that are within the time window
         self.request_timestamps = [t for t in self.request_timestamps if current_time - t < self.time_window]
 
         if len(self.request_timestamps) < self.rate_limit:
@@ -21,7 +22,7 @@ class DDOSPrevention:
 
 # GUI to simulate DDoS attack detection
 class DDOSApp:
-    def _init_(self, root):
+    def __init__(self, root):
         self.ddos_system = DDOSPrevention(rate_limit=5, time_window=10)  # 5 requests per 10 seconds
         self.root = root
         self.root.title("DDoS Mitigation Simulation")
