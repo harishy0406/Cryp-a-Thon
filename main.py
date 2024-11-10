@@ -49,7 +49,7 @@ class AnimationWindow:
         horizontal_layout = QHBoxLayout()  # Create a horizontal layout
 
         # Create a QLabel for the heading
-        heading_label = QLabel("Welcome to CipherShield")
+        heading_label = QLabel("Welcome to ")
         heading_label.setFont(QFont("Arial", 44, QFont.Bold))
         heading_label.setStyleSheet("color: white;")
 
@@ -104,7 +104,7 @@ class AnimationWindow:
         return button
 
     def open_github_repo(self):
-        github_url = "https://github.com/harishy0406/CipherShield"
+        github_url = "https://github.com/harishy0406/Cryp-a-Thon"
         QDesktopServices.openUrl(QUrl(github_url))
 
     def confirm_quit_direct(self):
