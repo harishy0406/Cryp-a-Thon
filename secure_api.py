@@ -1,49 +1,33 @@
 import os
-import time
 import logging
 import requests
 from tkinter import *
 from tkinter import messagebox, scrolledtext
-from requests_oauthlib import OAuth2Session
 from ratelimit import limits, sleep_and_retry
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-API_KEY = os.getenv("578e7c3efb0c4f5c90475012242910")
-CLIENT_ID = os.getenv("CLIENT_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-TOKEN_URL = "https://api.example.com/oauth/token"
-API_URL = "https://api.example.com/secure-data"
+API_KEY = os.getenv("THIRD_PARTY_API_KEY")
+API_URL = os.getenv("API_URL")
 
 # Configure logging
 logging.basicConfig(filename="api_access.log", level=logging.INFO)
 
-# OAuth2 Setup
-def get_oauth_session():
-    oauth = OAuth2Session(CLIENT_ID)
-    token = oauth.fetch_token(
-        TOKEN_URL,
-        client_secret=CLIENT_SECRET
-    )
-    return OAuth2Session(CLIENT_ID, token=token)
-
 # Rate limiting configuration: 5 requests per minute
 @sleep_and_retry
 @limits(calls=5, period=60)
-def fetch_data_with_security():
+def fetch_data_with_security(city):
     try:
-        # OAuth2 Session setup
-        session = get_oauth_session()
-        
-        # Secure headers
-        headers = {
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
+        # Parameters for the weather API request
+        params = {
+            "key": API_KEY,
+            "q": city,
+            "aqi": "no"
         }
         
         # Make a secure HTTPS request
-        response = session.get(API_URL, headers=headers)
+        response = requests.get(API_URL, params=params)
         
         # Log the API access
         logging.info(f"API request made to {API_URL} with status code {response.status_code}")
@@ -70,26 +54,36 @@ def fetch_data_with_security():
 
 # Data validation function to verify expected keys in response
 def validate_data(data):
-    required_keys = ["id", "value", "timestamp"]  # Example keys
+    # Validate if the essential keys exist in the response
+    required_keys = ["location", "current"]  # Updated based on typical weather API response
     return all(key in data for key in required_keys)
 
-# Function to securely fetch data and display in the GUI
+# Function to fetch data and display it in the GUI
 def fetch_and_display_data():
-    data = fetch_data_with_security()
-    if data:
-        result_text.delete(1.0, END)  # Clear previous data
-        result_text.insert(END, str(data))  # Display new data
+    city = city_entry.get()
+    if city:
+        data = fetch_data_with_security(city)
+        if data:
+            result_text.delete(1.0, END)  # Clear previous data
+            result_text.insert(END, str(data))  # Display new data
+    else:
+        messagebox.showerror("Input Error", "Please enter a city name")
 
 # Create GUI with Tkinter
 root = Tk()
-root.title("Secure IoT API Fetcher")
+root.title("Weather Data Fetcher")
 root.geometry("600x400")
 
 # Title label
-Label(root, text="IoT API Secure Data Fetcher", font=("Arial", 16)).pack(pady=10)
+Label(root, text="Weather Data Fetcher", font=("Arial", 16)).pack(pady=10)
+
+# Input for city name
+Label(root, text="Enter City Name:", font=("Arial", 12)).pack(pady=5)
+city_entry = Entry(root, font=("Arial", 12))
+city_entry.pack(pady=5)
 
 # Fetch data button
-fetch_button = Button(root, text="Fetch Secure Data", font=("Arial", 12), command=fetch_and_display_data)
+fetch_button = Button(root, text="Fetch Weather Data", font=("Arial", 12), command=fetch_and_display_data)
 fetch_button.pack(pady=5)
 
 # Text area to display fetched data

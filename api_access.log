@@ -1,0 +1,5 @@
+INFO:root:API request made to http://api.weatherapi.com/v1/current.json with status code 200
+INFO:root:API request made to http://api.weatherapi.com/v1/current.json with status code 400
+ERROR:root:HTTP error occurred: 400 Client Error: Bad Request for url: http://api.weatherapi.com/v1/current.json?key=578e7c3efb0c4f5c90475012242910&q=prayagraj&aqi=no
+INFO:root:API request made to http://api.weatherapi.com/v1/current.json with status code 200
+INFO:root:API request made to http://api.weatherapi.com/v1/current.json with status code 200
