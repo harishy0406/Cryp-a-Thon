@@ -7,17 +7,17 @@ from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage, QBrush, QDesktopServic
 from PyQt5.QtCore import Qt, QTimer, QUrl
 
 
-class AnimationWindow:
+class CyberToolkitApp:
     def __init__(self):
         self.app = QApplication(sys.argv)
 
         # Set up splash screen
-        splash_pixmap = QPixmap(r"aa.png")
+        splash_pixmap = QPixmap("aa.png")  # Update with actual splash image path
         self.splash = QSplashScreen(splash_pixmap, Qt.WindowStaysOnTopHint)
         self.splash.setMask(splash_pixmap.mask())
         self.splash.show()
 
-        # Load main window after a delay of 1691 ms
+        # Load main window after a delay
         QTimer.singleShot(1691, self.load_main_window)
 
     def load_main_window(self):
@@ -28,8 +28,8 @@ class AnimationWindow:
         self.window.setWindowTitle("IoT FortiGuard")
         self.window.showFullScreen()
 
-        # Set background image for main window to fit screen
-        background_image = QImage(r"ab.jpg").scaled(
+        # Set background image for main window to fit screen  ab.jpg
+        background_image = QImage("background.jpg").scaled(
             self.window.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation
         )
         palette = QPalette()
@@ -79,7 +79,7 @@ class AnimationWindow:
             ("GitHub Repository", self.open_github_repo),
             ("Toolkit", self.open_toolkit),
             ("Team Members", self.open_team_members),
-            ("Quit", self.confirm_quit_direct)
+            ("Quit", self.confirm_quit)
         ]
 
         for i, (text, method) in enumerate(buttons):
@@ -98,7 +98,7 @@ class AnimationWindow:
         button.setFont(QFont("Arial", font_size))
         button.clicked.connect(method)
         button.setStyleSheet(
-            "background-color: #00000; color: white; "
+            "background-color: #000000; color: white; "
             "border: 2px solid white; padding: 10px; text-align: center;"
         )
         button.setCursor(Qt.PointingHandCursor)
@@ -108,7 +108,7 @@ class AnimationWindow:
         github_url = "https://github.com/harishy0406/Cryp-a-Thon"
         QDesktopServices.openUrl(QUrl(github_url))
 
-    def confirm_quit_direct(self):
+    def confirm_quit(self):
         confirm = QMessageBox.question(
             self.window,
             'Exit Confirmation',
@@ -126,7 +126,7 @@ class AnimationWindow:
         self.toolkit_window.showFullScreen()
 
         # Background image for toolkit window
-        background_image = QPixmap(r"toolkit back.png").scaled(
+        background_image = QPixmap("toolkit_background.jpg").scaled(
             self.toolkit_window.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation
         )
         palette = QPalette()
@@ -141,11 +141,11 @@ class AnimationWindow:
 
         # Toolkit buttons with labels and methods
         buttons = [
-            ("Unauthorized Access", self.password_manager),
-            ("Secure API Check", self.password_generator),
-            ("DNS spoofing", self.password_strength_checker),
-            ("Data Breach", self.ip_look),
-            ("Denial of Service", self.encryption_decryption),
+            ("Access Monitoring", self.access_monitoring),
+            ("Secure API Testing", self.secure_api_test),
+            ("DNS Monitoring", self.dns_monitoring),
+            ("Data Encryption", self.data_encryption),
+            ("DoS Detection", self.dos_detection),
             ("Back", self.toolkit_window.close)
         ]
 
@@ -155,7 +155,7 @@ class AnimationWindow:
             button.setFont(QFont("Arial", 30))
             button.clicked.connect(method)
             button.setStyleSheet(
-                "background-color: #00000; color: white; border: 4px solid black; "
+                "background-color: #000000; color: white; border: 4px solid black; "
                 "padding: 30px; text-align: center;"
             )
             button.setCursor(Qt.PointingHandCursor)
@@ -171,8 +171,7 @@ class AnimationWindow:
         self.team_window.resize(600, 400)
 
         # Set up background image for the team window
-        team_background = QPixmap(r"team_background.jpg").scaled(
-            self.team_window.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation
+        team_background = QPixmap("team_background.jpg").scaled(self.team_window.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation
         )
         palette = QPalette()
         palette.setBrush(QPalette.Background, QBrush(team_background))
@@ -183,7 +182,8 @@ class AnimationWindow:
         team_layout = QVBoxLayout()
 
         # Add team members' information
-        team_info = QLabel("Team Members:\n\n1.Anmol Verma - 22MIS0153\n2. Azmil Ashruff - 22MIS0074\n3. M Harish Gautham - 22MIS0421\n4. Ratnesh Chandra Pandey - 22MIS0009\n5. Prasoon Jha - 22MIS0033 ")
+        team_info = QLabel("Team Members:\n\n1. Anmol Verma - 22MIS0153\n2. Azmil Ashruff - 22MIS0074\n"
+                           "3. M Harish Gautham - 22MIS0421\n4. Ratnesh Chandra Pandey - 22MIS0009\n5. Prasoon Jha - 22MIS0033 ")
         team_info.setFont(QFont("Arial", 16))
         team_info.setStyleSheet("color: white;")
         team_info.setAlignment(Qt.AlignLeft)
@@ -194,7 +194,7 @@ class AnimationWindow:
         back_button.setFont(QFont("Arial", 16))
         back_button.clicked.connect(self.team_window.close)
         back_button.setStyleSheet(
-            "background-color: #00000; color: white; border: 2px solid white; padding: 10px; text-align: center;"
+            "background-color: #000000; color: white; border: 2px solid white; padding: 10px; text-align: center;"
         )
         back_button.setCursor(Qt.PointingHandCursor)
         team_layout.addWidget(back_button)
@@ -204,25 +204,25 @@ class AnimationWindow:
         self.team_window.show()
 
     # Define toolkit feature methods
-    def password_manager(self):
-        subprocess.Popen(["python", r"unauthorized.py"])
+    def access_monitoring(self):
+        subprocess.Popen(["python", "unauthorized.py"])
 
-    def password_generator(self):
-        subprocess.Popen(["python", r"secure_api.py"])
+    def secure_api_test(self):
+        subprocess.Popen(["python", "secure_api.py"])
 
-    def password_strength_checker(self):
-        subprocess.Popen(["python", r"dns_Spoof.py"])
+    def dns_monitoring(self):
+        subprocess.Popen(["python", "dns_Spoof.py"])
 
-    def ip_look(self):
-        subprocess.Popen(["python", r"data_brch.py"])
+    def data_encryption(self):
+        subprocess.Popen(["python", "data_brch.py"])
 
-    def encryption_decryption(self):
-        subprocess.Popen(["python", r"dos.py"])
+    def dos_detection(self):
+        subprocess.Popen(["python", "dos.py"])
 
     def run(self):
         sys.exit(self.app.exec_())
 
 
 if __name__ == "__main__":
-    app = AnimationWindow()
+    app = CyberToolkitApp()
     app.run()
