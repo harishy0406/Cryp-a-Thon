@@ -140,11 +140,11 @@ class AnimationWindow:
 
         # Toolkit buttons with labels and methods
         buttons = [
-            ("Password Manager", self.password_manager),
-            ("Password Generator", self.password_generator),
-            ("Password Strength Checker", self.password_strength_checker),
-            ("IP Lookup", self.ip_look),
-            ("Encryption/Decryption", self.encryption_decryption),
+            ("Unauthorized Access", self.password_manager),
+            ("Secure API Check", self.password_generator),
+            ("DNS spoofing", self.password_strength_checker),
+            ("Data Breach", self.ip_look),
+            ("Denial of Service", self.encryption_decryption),
             ("Back", self.toolkit_window.close)
         ]
 
@@ -204,19 +204,19 @@ class AnimationWindow:
 
     # Define toolkit feature methods
     def password_manager(self):
-        subprocess.Popen(["python", r"password_manager.py"])
+        subprocess.Popen(["python", r"unauthorized.py"])
 
     def password_generator(self):
-        subprocess.Popen(["python", r"password_generator.py"])
+        subprocess.Popen(["python", r"secure_api.py"])
 
     def password_strength_checker(self):
-        subprocess.Popen(["python", r"password_strength.py"])
+        subprocess.Popen(["python", r"dns_Spoof.py"])
 
     def ip_look(self):
-        subprocess.Popen(["python", r"ip_lookup_latest.py"])
+        subprocess.Popen(["python", r"data_brch.py"])
 
     def encryption_decryption(self):
-        subprocess.Popen(["python", r"encry_decry.py"])
+        subprocess.Popen(["python", r"dos.py"])
 
     def run(self):
         sys.exit(self.app.exec_())

@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-API_KEY = os.getenv("THIRD_PARTY_API_KEY")
+API_KEY = os.getenv("578e7c3efb0c4f5c90475012242910")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 TOKEN_URL = "https://api.example.com/oauth/token"

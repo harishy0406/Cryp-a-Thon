@@ -1,100 +1,131 @@
+import socket
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+import base64
+import hashlib
 import os
-import time
-import logging
-import requests
-from tkinter import *
-from tkinter import messagebox, scrolledtext
-from requests_oauthlib import OAuth2Session
-from ratelimit import limits, sleep_and_retry
-from dotenv import load_dotenv
+import tkinter as tk
+from tkinter import messagebox
 
-# Load environment variables
-load_dotenv()
-API_KEY = os.getenv("THIRD_PARTY_API_KEY")
-CLIENT_ID = os.getenv("CLIENT_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-TOKEN_URL = "https://api.example.com/oauth/token"
-API_URL = "https://api.example.com/secure-data"
+# Key management and secure storage
+class IoTDeviceSecurity:
+    def __init__(self):
+        self.key = self.load_key()
 
-# Configure logging
-logging.basicConfig(filename="api_access.log", level=logging.INFO)
+    def load_key(self):
+        key_path = "aes_key.bin"
+        if os.path.exists(key_path):
+            with open(key_path, 'rb') as file:
+                return file.read()
+        else:
+            key = get_random_bytes(16)
+            with open(key_path, 'wb') as file:
+                file.write(key)
+            return key
 
-# OAuth2 Setup
-def get_oauth_session():
-    oauth = OAuth2Session(CLIENT_ID)
-    token = oauth.fetch_token(
-        TOKEN_URL,
-        client_secret=CLIENT_SECRET
-    )
-    return OAuth2Session(CLIENT_ID, token=token)
+    def encrypt_data(self, data):
+        cipher = AES.new(self.key, AES.MODE_EAX)
+        nonce = cipher.nonce
+        ciphertext, tag = cipher.encrypt_and_digest(data.encode())
+        return base64.b64encode(nonce + ciphertext).decode()
 
-# Rate limiting configuration: 5 requests per minute
-@sleep_and_retry
-@limits(calls=5, period=60)
-def fetch_data_with_security():
-    try:
-        # OAuth2 Session setup
-        session = get_oauth_session()
+    def decrypt_data(self, encrypted_data):
+        decoded_data = base64.b64decode(encrypted_data)
+        nonce = decoded_data[:16]
+        ciphertext = decoded_data[16:]
+        cipher = AES.new(self.key, AES.MODE_EAX, nonce=nonce)
+        return cipher.decrypt(ciphertext).decode()
+
+# IoT Communication with Authentication and Secure Data Exchange
+class IoTCommunication:
+    def __init__(self, authorized_devices):
+        self.security = IoTDeviceSecurity()
+        self.authorized_devices = authorized_devices  # List of authorized devices
+
+    def authenticate_device(self, device_id, shared_secret):
+        # Authenticate device using its ID and shared secret
+        combined = f"{device_id}:{shared_secret}".encode()
+        return hashlib.sha256(combined).hexdigest()
+
+    def check_authorization(self, device_id):
+        # Check if device ID is in the list of authorized devices
+        if device_id in self.authorized_devices:
+            return True
+        else:
+            return False
+
+    def send_data(self, device_id, shared_secret, data):
+        # If the device is authorized, send encrypted data
+        if self.check_authorization(device_id):
+            auth_token = self.authenticate_device(device_id, shared_secret)
+            encrypted_data = self.security.encrypt_data(data)
+            return auth_token, encrypted_data, None  # No error
+        else:
+            # If device is unauthorized, return an error
+            return None, None, "Unauthorized device access attempt!"
+
+    def receive_data(self, encrypted_data):
+        try:
+            decrypted_data = self.security.decrypt_data(encrypted_data)
+            return decrypted_data
+        except Exception as e:
+            return f"Decryption Failed: {e}"
+
+# GUI Application using tkinter
+class IoTSecurityApp:
+    def __init__(self, root):
+        self.comm = IoTCommunication(authorized_devices=["Device123", "456"])  # Authorized devices
+        self.root = root
+        self.root.title("IoT Device Security Framework")
+
+        # GUI Elements
+        self.device_id_label = tk.Label(root, text="Device ID:")
+        self.device_id_label.grid(row=0, column=0, padx=5, pady=5)
+        self.device_id_entry = tk.Entry(root, width=30)
+        self.device_id_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        self.secret_label = tk.Label(root, text="Shared Secret:")
+        self.secret_label.grid(row=1, column=0, padx=5, pady=5)
+        self.secret_entry = tk.Entry(root, show="*", width=30)
+        self.secret_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        self.data_label = tk.Label(root, text="Data to Send:")
+        self.data_label.grid(row=2, column=0, padx=5, pady=5)
+        self.data_entry = tk.Entry(root, width=30)
+        self.data_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        self.send_button = tk.Button(root, text="Send Data", command=self.send_data)
+        self.send_button.grid(row=3, column=0, columnspan=2, pady=10)
+
+        self.output_label = tk.Label(root, text="Received (Decrypted) Data:")
+        self.output_label.grid(row=4, column=0, padx=5, pady=5)
+        self.output_text = tk.Text(root, height=5, width=40)
+        self.output_text.grid(row=4, column=1, padx=5, pady=5)
+
+    def send_data(self):
+        device_id = self.device_id_entry.get()
+        shared_secret = self.secret_entry.get()
+        data = self.data_entry.get()
+
+        if not device_id or not shared_secret or not data:
+            messagebox.showwarning("Input Error", "Please fill all fields!")
+            return
+
+        # Send data securely after authentication
+        auth_token, encrypted_data, error = self.comm.send_data(device_id, shared_secret, data)
         
-        # Secure headers
-        headers = {
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
-        }
-        
-        # Make a secure HTTPS request
-        response = session.get(API_URL, headers=headers)
-        
-        # Log the API access
-        logging.info(f"API request made to {API_URL} with status code {response.status_code}")
-        
-        # Raise an error for non-200 responses
-        response.raise_for_status()
-        
-        # Validate and return data
-        data = response.json()
-        if not validate_data(data):
-            raise ValueError("Data validation failed")
-        
-        return data
+        if error:
+            messagebox.showerror("Unauthorized Access", error)
+            return
 
-    except requests.exceptions.HTTPError as http_err:
-        logging.error(f"HTTP error occurred: {http_err}")
-        messagebox.showerror("Error", f"HTTP error: {http_err}")
-    except requests.exceptions.RequestException as req_err:
-        logging.error(f"Request error occurred: {req_err}")
-        messagebox.showerror("Error", f"Request error: {req_err}")
-    except Exception as err:
-        logging.error(f"Other error occurred: {err}")
-        messagebox.showerror("Error", f"An error occurred: {err}")
+        messagebox.showinfo("Data Sent", f"Auth Token: {auth_token}\nEncrypted Data: {encrypted_data}")
 
-# Data validation function to verify expected keys in response
-def validate_data(data):
-    required_keys = ["id", "value", "timestamp"]  # Example keys
-    return all(key in data for key in required_keys)
+        # Receive and decrypt data
+        decrypted_data = self.comm.receive_data(encrypted_data)
+        self.output_text.delete(1.0, tk.END)
+        self.output_text.insert(tk.END, decrypted_data)
 
-# Function to securely fetch data and display in the GUI
-def fetch_and_display_data():
-    data = fetch_data_with_security()
-    if data:
-        result_text.delete(1.0, END)  # Clear previous data
-        result_text.insert(END, str(data))  # Display new data
-
-# Create GUI with Tkinter
-root = Tk()
-root.title("Secure IoT API Fetcher")
-root.geometry("600x400")
-
-# Title label
-Label(root, text="IoT API Secure Data Fetcher", font=("Arial", 16)).pack(pady=10)
-
-# Fetch data button
-fetch_button = Button(root, text="Fetch Secure Data", font=("Arial", 12), command=fetch_and_display_data)
-fetch_button.pack(pady=5)
-
-# Text area to display fetched data
-result_text = scrolledtext.ScrolledText(root, width=70, height=15, font=("Arial", 10))
-result_text.pack(pady=10)
-
-# Run the main Tkinter loop
+# Run the application
+root = tk.Tk()
+app = IoTSecurityApp(root)
 root.mainloop()
